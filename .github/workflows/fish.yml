@@ -25,7 +25,7 @@ jobs:
     uses: pkgforge/soarpkgs/.github/workflows/matrix_builds.yaml@main
     with:
       host: "ALL" #Otherwise aarch64-Linux OR x86_64-Linux
-      sbuild-url: "https://github.com/${{ github.repository }}/raw/main/fish.sbuild" #Must always be a raw URL
+      sbuild-url: "https://raw.githubusercontent.com/{{ github.repository }}/heads/master/fish.sbuild" #Must always be a raw URL
       ghcr-url: "ghcr.io/${{ github.repository }}/stable" #Package will be pushed under this path
       pkg-family: "fish" #Needed so soar can cross reference with other repos/nests
       debug: false #If set to true, will run everything with set -x
