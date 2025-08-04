@@ -1,0 +1,33 @@
+name: 🧰🛠️ Build Soar Package 📦📀
+
+##Optional:
+# Setup minisign & add the private key as secret: MINISIGN_KEY [${{ secrets.MINISIGN_KEY }}]
+# Setup a Read-Only Underprivileged Github Token as secret: RO_GHTOKEN [${{ secrets.RO_GHTOKEN }}]
+# Setup a Read-Only Underprivileged GitLab Token as secret: RO_GLTOKEN [${{ secrets.RO_GLTOKEN }}]
+
+#These permissions are needed by main CI
+permissions:
+  attestations: write #Needed for Build Provenance & Attestations
+  contents: write #Needed to create Release
+  id-token: write #Needed for Build Provenance & Attestations
+  packages: write #Needed to push to ghcr
+
+#Assuming you just published a new release & the SBUILD doesn't build from source
+on:
+  #push:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  #Assuming you are targeting a stable release
+  stable-release:
+    uses: pkgforge/soarpkgs/.github/workflows/matrix_builds.yaml@main
+    with:
+      host: "ALL" #Otherwise aarch64-Linux OR x86_64-Linux
+      sbuild-url: "https://github.com/${{ github.repository }}/raw/main/.github/SBUILD/latest.yaml" #Must always be a raw URL
+      ghcr-url: "ghcr.io/${{ github.repository }}/stable" #Package will be pushed under this path
+      pkg-family: "YOUR-PKG-PRIMARY-NAME" #Needed so soar can cross reference with other repos/nests
+      debug: false #If set to true, will run everything with set -x
+      logs: true #Will Attach the entire Logs + File as Workflow Artifact
+      rebuild: true #Will rebuild even if ghcr tag already exists
