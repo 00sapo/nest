@@ -1,0 +1,107 @@
+#!/SBUILD ver @v1.0.0
+#SELF: This contains the github raw url to itself, so it can be downloaded with curl etc: 
+_disabled: false #We want this SBUILD to run
+
+#! We Assume you have read the SPEC at least twice, so we won't repeat things to keep this template small
+#! If you haven't or need a refresher: https://docs.pkgforge.dev/sbuild/introduction
+
+#! You can use this script to fetch some of these values automatically (using repology)
+# bash <(curl -qfsSL "https://raw.githubusercontent.com/pkgforge/metadata/refs/heads/main/soarpkgs/scripts/repology_fetcher.sh") "${PKG}"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/2.pkg
+pkg: "fish" #pkg is canonical name & is Necessary
+pkg_id: "github.com.fish-shell.fish-shell.stable" #Leave this empty or delete it if not needed
+pkg_type: "static" #What kind of package it is: appbundle|appimage|archive|dynamic|flatimage|gameimage|nixappimage|runimage|static etc
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/5.buildasset
+#This field specifies what tools soar will install before running the final x_exec.run
+#You can delete this & it's subfields
+# build_util:
+#  #Add/Remove based on needs
+#   - "curl"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/8.description
+#Use the repology fetcher to see possible values
+description: " The user-friendly command line shell"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/10.distropkg
+#Delete what you can't fill along with its parent
+distro_pkg:
+  alpine:
+    - "fish"
+  archlinux:
+    extras:
+      - "fish"
+  debian:
+    - "fish"
+  nixpkgs:
+    - "fish"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/11.homepage
+homepage:
+  - "https://fishshell.com/"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/13.license
+license:
+  - "GPL-2"
+  - "MIT"
+  - "Python Software Foundation License"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/14.maintainer
+#Replace this with your own profile, you can also attach links to your email, discord, web etc
+maintainer:
+  - "00sapo (https://github.com/00sapo)"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/16.provides
+#The app or a list of apps this sbuild will generate
+provides:
+  - "fish"
+  - "fish_key_reader"
+  - "fish_indent"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/17.repology
+#The search term you used when using repology-fetcher or from the site: https://repology.org/projects/ 
+repology:
+  - "fish"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/18.sourceurl
+#This is Important, you should fill the exact download page from where you will be getting the package 
+src_url:
+  - "https://github.com/fish-shell/fish-shell/releases"
+
+category:
+  - "System"
+  - "ConsoleOnly"
+
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/19.tag
+#This has no strict requirement like the category field, so you can fill this with anything, however do be sensible  
+tag:
+  - "shell"
+  - "terminal"
+  
+#!Docs: https://docs.pkgforge.dev/sbuild/specification/20.x_exec  
+#This is the important part
+x_exec:
+  host: 
+    - "aarch64-Linux" #Remove, if it doesn't build for aarch64 Linux
+    - "x86_64-Linux"
+  shell: "bash" #Because bash is available everywhere, and we don't want users to install a esoteric shell
+  pkgver: |
+    #This will fetch the version and save it as "./${PKG}.version" (SBUILDER will do it, we don't need to do ourselves) and env ${PKG_VER}
+    curl -qfsSL "https://api.github.com/repos/fish-shell/fish-shell/releases/latest" | jq -r '.tag_name'  
+  run: |
+    ##Download the file
+    #IMPORTANT: ALWAYS try to save the main output file & related files with '${PKG}' variable
+    #If you don't want to use '${PKG}' env var, then hardcode the prog names from the value of .provides
+    #Based on uname, so we don't have to maintain duplicate scripts, however if your pkg only has one architecture support, change this accordingly
+    case "$(uname -m)" in
+      aarch64)
+       #This is an example of using soar dl to download gh release
+        timeout 3m soar dl "https://github.com/fish-shell/fish-shell@${PKGVER}" --match "aarch64" --exclude "x64,x86,zsync" --extract
+        ;;
+      x86_64)
+        timeout 3m soar dl "https://github.com/fish-shell/fish-shell@${PKGVER}" --match "amd64" --exclude "aarch64,arm,zsync" --extract
+        ;;
+    esac
+    #We are done and can let the Runner take it from here
+
