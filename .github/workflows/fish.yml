@@ -1,4 +1,4 @@
-name: 🧰🛠️ Build Soar Package 📦📀
+name: 🧰🛠️ Fish Soar Package 📦📀
 
 ##Optional:
 # Setup minisign & add the private key as secret: MINISIGN_KEY [${{ secrets.MINISIGN_KEY }}]
@@ -25,9 +25,9 @@ jobs:
     uses: pkgforge/soarpkgs/.github/workflows/matrix_builds.yaml@main
     with:
       host: "ALL" #Otherwise aarch64-Linux OR x86_64-Linux
-      sbuild-url: "https://github.com/${{ github.repository }}/raw/main/.github/SBUILD/latest.yaml" #Must always be a raw URL
+      sbuild-url: "https://github.com/${{ github.repository }}/raw/main/fish.sbuild" #Must always be a raw URL
       ghcr-url: "ghcr.io/${{ github.repository }}/stable" #Package will be pushed under this path
-      pkg-family: "YOUR-PKG-PRIMARY-NAME" #Needed so soar can cross reference with other repos/nests
+      pkg-family: "fish" #Needed so soar can cross reference with other repos/nests
       debug: false #If set to true, will run everything with set -x
       logs: true #Will Attach the entire Logs + File as Workflow Artifact
       rebuild: true #Will rebuild even if ghcr tag already exists
